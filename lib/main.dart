@@ -42,6 +42,15 @@ class Product {
   });
 }
 
+// Daftar kategori unik
+List<String> getCategories() {
+  final Set<String> categories = {};
+  for (var product in products) {
+    categories.add(product.category);
+  }
+  return categories.toList();
+}
+
 // 30 Data produk kue
 List<Product> products = [
   const Product(
@@ -49,7 +58,7 @@ List<Product> products = [
     name: 'Danish Blueberry',
     price: 25000,
     imageUrl: 'https://simplerecipesnow.com/wp-content/uploads/2025/11/puff-pastry-blueberry-danish.jpg',
-    description: 'Danish dengan buah blueberry yang lezat',
+    description: 'Danish dengan buah blueberry segar yang lezat. Tekstur pastry yang renyah di luar dan lembut di dalam, dipadukan dengan blueberry manis alami. Cocok untuk teman minum teh di pagi hari.',
     category: 'Pastry',
   ),
   const Product(
@@ -57,7 +66,7 @@ List<Product> products = [
     name: 'Kouign-Amann',
     price: 30000,
     imageUrl: 'https://therecipecritic.com/wp-content/uploads/2023/03/kouign-amman-667x1000.jpg',
-    description: 'Kue Prancis dengan lapisan yang renyah',
+    description: 'Kue pastry asal Prancis dengan lapisan karamel yang renyah dan legit. Terbuat dari adonan berlapis mentega dan gula yang dipanggang hingga karamelisasi sempurna.',
     category: 'Pastry',
   ),
   const Product(
@@ -65,7 +74,7 @@ List<Product> products = [
     name: 'Pain Suisse',
     price: 27000,
     imageUrl: 'https://res.cloudinary.com/hv9ssmzrz/image/fetch/c_fill,f_auto,h_976,q_auto,w_1300/https://s3-eu-west-1.amazonaws.com/images-ca-1-0-1-eu/recipe_photos/original/246798/pain_suisse_coco_choco_story1.jpg',
-    description: 'Kue Prancis dengan tekstur lembut dan rasa manis',
+    description: 'Kue pastry khas Swiss dengan isian custard dan chocolate chip. Tekstur lembut dan rasa manis yang pas, cocok untuk sarapan atau camilan sore.',
     category: 'Pastry',
   ),
   const Product(
@@ -73,7 +82,7 @@ List<Product> products = [
     name: 'Chocolate Ganache Tart',
     price: 35000,
     imageUrl: 'https://cdn.mos.cms.futurecdn.net/YBLGDEGizjEQWksN8jzPKb.jpg',
-    description: 'Tart dengan ganache cokelat yang lezat',
+    description: 'Tart dengan ganache cokelat premium yang meleleh di mulut. Basis tart yang renyah berpadu sempurna dengan ganache cokelat hitam yang kaya rasa.',
     category: 'Pastry',
   ),
   const Product(
@@ -81,7 +90,7 @@ List<Product> products = [
     name: 'Financier',
     price: 20000,
     imageUrl: 'https://hips.hearstapps.com/hmg-prod/images/financiers3-1663882860.jpg?crop=1.00xw:0.737xh;0,0&resize=980:*',
-    description: 'Kue cokelat lembut dengan rasa khas',
+    description: 'Kue mini khas Prancis dengan rasa almond yang khas dan tekstur lembut. Dibuat dengan tepung almond, mentega brown butter, dan putih telur.',
     category: 'Pastry',
   ),
   const Product(
@@ -89,7 +98,7 @@ List<Product> products = [
     name: 'Sfogliatella',
     price: 36000,
     imageUrl: 'https://media.istockphoto.com/id/490639574/id/foto/neapolitan-sfogliatella-riccia-wikipedia.jpg?s=612x612&w=0&k=20&c=EdYMPqRaxssMjBxgdwcNwwUKTp1BLIzPEX7Z3iv7ghY=',
-    description: 'Kue Italia dengan tekstur renyah dan rasa manis',
+    description: 'Kue tradisional Italia dengan bentuk kerang dan lapisan renyah berlapis-lapis. Isiannya terbuat dari ricotta, semolina, dan manisan buah.',
     category: 'Pastry',
   ),
   const Product(
@@ -97,7 +106,7 @@ List<Product> products = [
     name: 'Viennoiserie',
     price: 25000,
     imageUrl: 'https://media.istockphoto.com/id/1202979235/id/foto/viennoiserie-perancis-karya-seni-dari-koki-kue.jpg?s=170667a&w=0&k=20&c=NZPkyjOjBBK-veRhDB_b1D-yJq0VxmgqPMKl9Es2OrU=',
-    description: 'Kue Prancis dengan tekstur lembut dan rasa manis',
+    description: 'Kue pastry ala Wina dengan tekstur berlapis mentega yang lembut. Perpaduan sempurna antara croissant dan brioche.',
     category: 'Pastry',
   ),
   const Product(
@@ -105,7 +114,7 @@ List<Product> products = [
     name: 'Almond Croissant',
     price: 28000,
     imageUrl: 'https://insanelygoodrecipes.com/wp-content/uploads/2024/12/Almond-Filled-Croissant-Cut-in-Half-on-a-Plate.jpg',
-    description: 'Croissant dengan isian almond yang renyah',
+    description: 'Croissant dengan isian almond cream yang kaya rasa, ditaburi irisan almond panggang. Renyah di luar, lembut di dalam.',
     category: 'Pastry',
   ),
   const Product(
@@ -113,7 +122,7 @@ List<Product> products = [
     name: 'French Toast with Honey',
     price: 22000,
     imageUrl: 'https://cooksimpley.com/wp-content/uploads/2025/10/3.png',
-    description: 'French toast dengan sirup madu yang lezat',
+    description: 'Roti panggang ala Prancis yang disiram madu asli. Tekstur lembut dengan rasa manis alami madu, cocok untuk sarapan istimewa.',
     category: 'Pastry',
   ),
   const Product(
@@ -121,7 +130,7 @@ List<Product> products = [
     name: 'Cinnamon Roll',
     price: 22000,
     imageUrl: 'https://cdn.pixabay.com/photo/2022/12/06/04/05/cinnamon-rolls-7638242_1280.jpg',
-    description: 'Cinnamon roll dengan rasa manis dan karamel',
+    description: 'Gulungan kayu manis dengan cream cheese frosting yang creamy. Aroma kayu manis yang harum berpadu dengan rasa manis yang pas.',
     category: 'Pastry',
   ),
   const Product(
@@ -129,7 +138,7 @@ List<Product> products = [
     name: 'Banana Bread',
     price: 18000,
     imageUrl: 'https://gimmethatflavor.com/wp-content/uploads/2019/10/Banana-Bread-19.jpg',
-    description: 'Roti pisang lembut dengan rasa manis',
+    description: 'Roti pisang lembut dengan rasa manis alami pisang. Tekstur moist dan cocok dinikmati kapan saja.',
     category: 'Pastry',
   ),
   const Product(
@@ -137,7 +146,7 @@ List<Product> products = [
     name: 'Cheddar Cheese Scone',
     price: 22000,
     imageUrl: 'https://mealshine.com/wp-content/uploads/2025/08/18-Easy-Cheddar-Cheese-Scones-4.png',
-    description: 'Scone dengan keju cheddar yang lezat',
+    description: 'Scone gurih dengan keju cheddar berkualitas. Tekstur renyah di luar dan lembut di dalam, cocok untuk camilan sore.',
     category: 'Pastry',
   ),
   const Product(
@@ -145,7 +154,7 @@ List<Product> products = [
     name: 'Chicken Mayo Sandwich',
     price: 30000,
     imageUrl: 'https://www.spicebangla.com/wp-content/uploads/2024/06/chicken-mayo-sandwich-grill.jpg',
-    description: 'Sandwich ayam dengan mayones yang lezat',
+    description: 'Sandwich dengan isian ayam suwir dan mayones creamy. Dilengkapi dengan selada segar dan roti gandum yang lembut.',
     category: 'Makanan',
   ),
   const Product(
@@ -153,7 +162,7 @@ List<Product> products = [
     name: 'Double Chocolate Cookies',
     price: 15000,
     imageUrl: 'https://www.bunsenburnerbakery.com/wp-content/uploads/2024/12/Double-Chocolate-Chunk-Cookies-IMG_6879-1097x1536.jpg',
-    description: 'Kue cokelat ganda yang lezat',
+    description: 'Kue cokelat dengan double cokelat chunk yang meleleh. Renyah di pinggir, lembut di tengah.',
     category: 'Pastry',
   ),
   const Product(
@@ -161,7 +170,7 @@ List<Product> products = [
     name: 'Blueberry Muffin',
     price: 35000,
     imageUrl: 'https://simplyhomecooked.com/wp-content/uploads/2021/07/blueberry-muffins-10.jpg',
-    description: 'Muffin blueberry yang lezat',
+    description: 'Muffin lembut dengan potongan blueberry segar. Topping streusel yang renyah menambah kenikmatan.',
     category: 'Pastry',
   ),
   const Product(
@@ -169,7 +178,7 @@ List<Product> products = [
     name: 'Orange Cake',
     price: 20000,
     imageUrl: 'https://marysplate.com/wp-content/uploads/2025/10/flourless-orange-cake.png',
-    description: 'Kue jeruk yang lezat dan lembut',
+    description: 'Kue jeruk dengan rasa citrus segar. Tekstur lembut dan moist, dibuat dengan jus jeruk asli dan parutan kulit jeruk.',
     category: 'Cake',
   ),
   const Product(
@@ -177,7 +186,7 @@ List<Product> products = [
     name: 'Taro Cake',
     price: 25000,
     imageUrl: 'https://teakandthyme.com/wp-content/uploads/2023/10/ube-roll-cake-DSC_5910-1600.jpg',
-    description: 'Kue taro yang lezat dan lembut',
+    description: 'Kue taro ungu dengan rasa manis alami dan aroma khas. Lembut dan creamy, cocok untuk pecinta ube.',
     category: 'Cake',
   ),
   const Product(
@@ -185,7 +194,7 @@ List<Product> products = [
     name: 'Rainbow Cake',
     price: 25000,
     imageUrl: 'https://sugargeekshow.com/wp-content/uploads/2020/03/rainbow-cake-featured-scaled.jpg',
-    description: 'Kue berlapis dengan warna-warna cerah',
+    description: 'Kue berlapis warna-warni cerah yang cantik. Setiap lapisan memiliki rasa vanilla yang lembut dengan buttercream yang creamy.',
     category: 'Cake',
   ),
   const Product(
@@ -193,7 +202,7 @@ List<Product> products = [
     name: 'New York Cheesecake',
     price: 55000,
     imageUrl: 'https://4recipe.com/wp-content/uploads/2025/10/creamy-new-york-cheesecake_0_20251008_000618.jpg',
-    description: 'Cheesecake khas New York yang lezat',
+    description: 'Cheesecake khas New York dengan tekstur super creamy dan padat. Topping sour cream memberikan rasa asam segar yang khas.',
     category: 'Cake',
   ),
   const Product(
@@ -201,7 +210,7 @@ List<Product> products = [
     name: 'Carrot Cake',
     price: 25000,
     imageUrl: 'https://tyberrymuch.com/wp-content/uploads/2025/04/vegan-carrot-cake-feature.jpg',
-    description: 'Kue wortel yang lezat dan lembut',
+    description: 'Kue wortel dengan kacang kenari dan cream cheese frosting. Manis alami dari wortel berpadu dengan rempah kayu manis.',
     category: 'Cake',
   ),
   const Product(
@@ -209,7 +218,7 @@ List<Product> products = [
     name: 'Chocolate Indulgence',
     price: 30000,
     imageUrl: 'https://4.bp.blogspot.com/-JIPoeKYLf4Y/WovUR--cI-I/AAAAAAAAJQY/63JG0iup2ysgCUt79DXpcoX6WHpV-vHZACLcBGAs/s1600/chocolate-indulgence.jpg',
-    description: 'Kue cokelat yang lezat dan lembut',
+    description: 'Kue cokelat dengan lapisan ganache yang mewah. Untuk pecinta cokelat sejati, setiap gigitan adalah kenikmatan.',
     category: 'Cake',
   ),
   const Product(
@@ -217,7 +226,7 @@ List<Product> products = [
     name: 'Japanese Cotton Cheesecake',
     price: 35000,
     imageUrl: 'https://twoplaidaprons.com/wp-content/uploads/2020/07/Japanese-cotton-cheesecake-a-slice-of-cheesecake-half-pulled-out.jpg',
-    description: 'Cheesecake khas Jepang dengan tekstur lembut',
+    description: 'Cheesecake ala Jepang dengan tekstur selembut kapas. Ringan, lembut, dan tidak terlalu manis.',
     category: 'Cake',
   ),
   const Product(
@@ -233,7 +242,7 @@ List<Product> products = [
     name: 'Strawberry Sponge Cake',
     price: 25000,
     imageUrl: 'https://cakeshungry.com/wp-content/uploads/2024/08/Japanese-Strawberry-Sponge-Cake-Recipes-750x1125.jpg',
-    description: 'Kue berlapis dengan rasa stroberi',
+    description: 'Kue bolu lembut dengan lapisan krim stroberi dan potongan stroberi segar. Ringan dan menyegarkan.',
     category: 'Cake',
   ),
   const Product(
@@ -241,7 +250,7 @@ List<Product> products = [
     name: 'Marble Cake',
     price: 20000,
     imageUrl: 'https://cakeshungry.com/wp-content/uploads/2024/06/Moist-Marble-Cake.png',
-    description: 'Kue berlapis dengan pola marble',
+    description: 'Kue dengan pola marble dari perpaduan adonan vanilla dan cokelat. Tekstur moist dengan rasa yang seimbang.',
     category: 'Cake',
   ),
   const Product(
@@ -249,7 +258,7 @@ List<Product> products = [
     name: 'Oreo Cheesecake',
     price: 45000,
     imageUrl: 'https://pl.vihaad.com/wp-content/uploads/2025/10/oreo-cheesecake-recipe.jpg',
-    description: 'Cheesecake dengan rasa Oreo',
+    description: 'Cheesecake dengan base Oreo dan potongan Oreo di dalamnya. Cocok untuk penggemar Oreo dan cheesecake.',
     category: 'Cake',
   ),
   const Product(
@@ -273,7 +282,7 @@ List<Product> products = [
     name: 'Blueberry Cheesecake',
     price: 35000,
     imageUrl: 'https://wilingga.com/wp-content/uploads/2025/06/Blueberry-Cheesecake.jpg',
-    description: 'Cheesecake dengan rasa blueberry segar',
+    description: 'Cheesecake dengan topping blueberry segar dan saus blueberry. Rasa asam segar blueberry berpadu dengan creamy cheesecake.',
     category: 'Cake',
   ),
   const Product(
@@ -281,7 +290,7 @@ List<Product> products = [
     name: 'Cherry Cake',
     price: 25000,
     imageUrl: 'https://cakeshungry.com/wp-content/uploads/2024/05/Serving-Cherry-Cake-683x1024.png',
-    description: 'Kue dengan rasa ceri manis',
+    description: 'Kue dengan potongan ceri manis di setiap gigitan. Lembut dan harum dengan rasa buah ceri yang autentik.',
     category: 'Cake',
   ),
 ];
@@ -327,7 +336,6 @@ extension PaymentMethodExtension on PaymentMethod {
 
 // ==================== GOOGLE SHEETS SERVICE ====================
 class GoogleSheetsService {
-  // Ganti dengan URL deployment Google Apps Script Anda
   static const String scriptUrl =
       'https://script.google.com/macros/s/AKfycbw7x-9vpdbKCubrNgt6_KLoeC9Ibze4jr0zS-MB3PFD-FmmdPvQkSxyZBFxkUmKlWDP/exec';
 
@@ -339,7 +347,6 @@ class GoogleSheetsService {
     PaymentMethod paymentMethod,
   ) async {
     try {
-      // Persiapkan data items sebagai JSON
       final List<Map<String, dynamic>> itemsData = items.map((item) => {
         'product_name': item.product.name,
         'quantity': item.quantity,
@@ -347,10 +354,8 @@ class GoogleSheetsService {
         'total': item.totalPrice,
       }).toList();
 
-      // Encode items sebagai URL-encoded JSON string
       final String itemsJson = Uri.encodeComponent(jsonEncode(itemsData));
 
-      // Kirim via GET request (GAS lebih andal dengan GET + query params)
       final uri = Uri.parse(
         '$scriptUrl'
         '?customer_name=${Uri.encodeComponent(customerName)}'
@@ -368,13 +373,11 @@ class GoogleSheetsService {
       debugPrint('📨 Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // GAS bisa return redirect (302), body bisa berupa HTML
         final body = response.body.trim();
         if (body.startsWith('{')) {
           final Map<String, dynamic> result = jsonDecode(body);
           return result['status'] == 'success';
         }
-        // Jika response bukan JSON tapi status 200, anggap berhasil
         return true;
       }
 
@@ -441,8 +444,29 @@ class CartProvider extends ChangeNotifier {
 final cartProvider = CartProvider();
 
 // ==================== SCREEN: PRODUCT LIST ====================
-class ProductListScreen extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
+
+  @override
+  State<ProductListScreen> createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  String _selectedCategory = 'Semua';
+  late List<String> _categories;
+
+  @override
+  void initState() {
+    super.initState();
+    _categories = ['Semua', ...getCategories()];
+  }
+
+  List<Product> get _filteredProducts {
+    if (_selectedCategory == 'Semua') {
+      return products;
+    }
+    return products.where((p) => p.category == _selectedCategory).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -530,21 +554,68 @@ class ProductListScreen extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: products.length,
+          // Filter Kategori
+          Container(
+            height: 50,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: _categories.length,
               itemBuilder: (context, index) {
-                final product = products[index];
-                return ProductCard(product: product);
+                final category = _categories[index];
+                final isSelected = _selectedCategory == category;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FilterChip(
+                    label: Text(category),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedCategory = category;
+                      });
+                    },
+                    backgroundColor: Colors.grey.shade200,
+                    selectedColor: Colors.brown.shade100,
+                    checkmarkColor: Colors.brown,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.brown : Colors.grey.shade700,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                );
               },
             ),
+          ),
+          Expanded(
+            child: _filteredProducts.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.no_food, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tidak ada produk di kategori ini',
+                          style: TextStyle(color: Colors.grey.shade500),
+                        ),
+                      ],
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.7,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: _filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = _filteredProducts[index];
+                      return ProductCard(product: product);
+                    },
+                  ),
           ),
         ],
       ),
@@ -559,103 +630,205 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () {
+        _showProductDetailDialog(context);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: Image.network(
+                  product.imageUrl,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      color: Colors.brown.shade100,
+                      child: Icon(
+                        Icons.cake,
+                        size: 60,
+                        color: Colors.brown.shade300,
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      width: double.infinity,
+                      color: Colors.brown.shade100,
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    product.category,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Rp${product.price.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown.shade700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showQuantityDialog(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.brown,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                      ),
+                      child: const Text('Tambah'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+    );
+  }
+
+  void _showProductDetailDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.brown.shade600),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                product.name,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 product.imageUrl,
+                height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    width: double.infinity,
+                    height: 180,
                     color: Colors.brown.shade100,
-                    child: Icon(
-                      Icons.cake,
-                      size: 60,
-                      color: Colors.brown.shade300,
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: double.infinity,
-                    color: Colors.brown.shade100,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: Icon(Icons.cake, size: 60, color: Colors.brown.shade300),
                   );
                 },
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 16),
+            Text(
+              'Kategori: ${product.category}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.brown.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              product.description,
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  product.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  'Harga',
+                  style: TextStyle(color: Colors.grey.shade600),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  product.category,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Text(
                   'Rp${product.price.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    fontSize: 18,
                     color: Colors.brown.shade700,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _showQuantityDialog(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                    ),
-                    child: const Text('Tambah'),
                   ),
                 ),
               ],
             ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Tutup'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _showQuantityDialog(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.brown,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Pesan Sekarang'),
           ),
         ],
       ),
@@ -714,6 +887,9 @@ class ProductCard extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Batal'),
               ),
               ElevatedButton(
@@ -730,6 +906,7 @@ class ProductCard extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.brown,
+                  foregroundColor: Colors.white,
                 ),
                 child: const Text('Tambahkan'),
               ),
@@ -917,7 +1094,6 @@ class _CartScreenState extends State<CartScreen> {
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 16),
-                    // METODE PEMBAYARAN
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -1092,13 +1268,11 @@ class _CartScreenState extends State<CartScreen> {
       return;
     }
 
-    // Simpan referensi sebelum await agar aman dari async BuildContext gap
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     setState(() => _isProcessing = true);
 
-    // Simpan nilai lokal sebelum await
     final customerName = _nameController.text;
     final tableNumber = _tableController.text;
     final paymentMethod = _selectedPaymentMethod;
@@ -1152,8 +1326,8 @@ class _CartScreenState extends State<CartScreen> {
               cart.clearCart();
               _nameController.clear();
               _tableController.clear();
-              navigator.pop(); // tutup dialog
-              navigator.pop(); // kembali ke product list
+              navigator.pop();
+              navigator.pop();
             },
           ),
         ),
