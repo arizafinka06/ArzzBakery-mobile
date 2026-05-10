@@ -327,9 +327,10 @@ extension PaymentMethodExtension on PaymentMethod {
 
 // ==================== GOOGLE SHEETS SERVICE ====================
 class GoogleSheetsService {
-  // GANTI DENGAN URL BARU ANDA!!!
-  static const String scriptUrl = 'https://script.google.com/macros/s/AKfycbzRnMBufbB-7HufAVHgf1o-7OXrjNeE_4X5ZYa_0h5-QVT7zJAEuoP7ugWZPZfx17Il/exec';
-  
+  // Ganti dengan URL deployment Google Apps Script Anda
+  static const String scriptUrl =
+      'https://script.google.com/macros/s/AKfycbw7x-9vpdbKCubrNgt6_KLoeC9Ibze4jr0zS-MB3PFD-FmmdPvQkSxyZBFxkUmKlWDP/exec';
+
   static Future<bool> sendOrderToSheet(
     List<CartItem> items,
     double total,
@@ -338,50 +339,48 @@ class GoogleSheetsService {
     PaymentMethod paymentMethod,
   ) async {
     try {
-      // Persiapkan data items
-      final List<Map<String, dynamic>> itemsData = [];
-      for (var item in items) {
-        itemsData.add({
-          'product_name': item.product.name,
-          'quantity': item.quantity,
-          'price': item.product.price,
-          'total': item.totalPrice,
-        });
-      }
-      
-      // Buat data pesanan
-      final Map<String, dynamic> orderData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'customer_name': customerName,
-        'table_number': tableNumber,
-        'total_amount': total,
-        'payment_method': paymentMethod.displayName,
-        'items': itemsData,
-      };
-      
-      print('📤 Mengirim data: ${jsonEncode(orderData)}');
-      
-      // Kirim POST request
-      final response = await http.post(
-        Uri.parse(scriptUrl),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(orderData),
-      ).timeout(const Duration(seconds: 30));
-      
-      print('✅ Response status: ${response.statusCode}');
-      print('📨 Response body: ${response.body}');
-      
+      // Persiapkan data items sebagai JSON
+      final List<Map<String, dynamic>> itemsData = items.map((item) => {
+        'product_name': item.product.name,
+        'quantity': item.quantity,
+        'price': item.product.price,
+        'total': item.totalPrice,
+      }).toList();
+
+      // Encode items sebagai URL-encoded JSON string
+      final String itemsJson = Uri.encodeComponent(jsonEncode(itemsData));
+
+      // Kirim via GET request (GAS lebih andal dengan GET + query params)
+      final uri = Uri.parse(
+        '$scriptUrl'
+        '?customer_name=${Uri.encodeComponent(customerName)}'
+        '&table_number=${Uri.encodeComponent(tableNumber)}'
+        '&total_amount=$total'
+        '&payment_method=${Uri.encodeComponent(paymentMethod.displayName)}'
+        '&items=$itemsJson',
+      );
+
+      debugPrint('📤 Mengirim ke: $uri');
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 30));
+
+      debugPrint('✅ Status: ${response.statusCode}');
+      debugPrint('📨 Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final Map<String, dynamic> result = jsonDecode(response.body);
-        return result['status'] == 'success';
+        // GAS bisa return redirect (302), body bisa berupa HTML
+        final body = response.body.trim();
+        if (body.startsWith('{')) {
+          final Map<String, dynamic> result = jsonDecode(body);
+          return result['status'] == 'success';
+        }
+        // Jika response bukan JSON tapi status 200, anggap berhasil
+        return true;
       }
-      
+
       return false;
-      
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error mengirim pesanan: $e');
       return false;
     }
   }
@@ -938,24 +937,64 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: PaymentMethod.values.map((method) {
+                              final bool selected = _selectedPaymentMethod == method;
                               return Expanded(
-                                child: RadioListTile<PaymentMethod>(
-                                  title: Row(
-                                    children: [
-                                      Icon(method.icon, size: 20),
-                                      const SizedBox(width: 8),
-                                      Text(method.displayName),
-                                    ],
-                                  ),
-                                  value: method,
-                                  groupValue: _selectedPaymentMethod,
-                                  onChanged: (value) {
+                                child: GestureDetector(
+                                  onTap: () {
                                     setState(() {
-                                      _selectedPaymentMethod = value!;
+                                      _selectedPaymentMethod = method;
                                     });
                                   },
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      color: selected ? Colors.brown.shade50 : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: selected ? Colors.brown : Colors.transparent,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          margin: const EdgeInsets.only(right: 6),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: selected ? Colors.brown : Colors.grey,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: selected
+                                              ? Center(
+                                                  child: Container(
+                                                    width: 10,
+                                                    height: 10,
+                                                    decoration: const BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: Colors.brown,
+                                                    ),
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                        Icon(method.icon, size: 16,
+                                          color: selected ? Colors.brown : Colors.grey.shade700),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          method.displayName,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: selected ? Colors.brown : Colors.grey.shade700,
+                                            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               );
                             }).toList(),
@@ -1052,83 +1091,77 @@ class _CartScreenState extends State<CartScreen> {
       );
       return;
     }
-    
+
+    // Simpan referensi sebelum await agar aman dari async BuildContext gap
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     setState(() => _isProcessing = true);
-    
-    bool success = await GoogleSheetsService.sendOrderToSheet(
-      cart.cartItems,
-      cart.totalAmount,
-      _nameController.text,
-      _tableController.text,
-      _selectedPaymentMethod,
+
+    // Simpan nilai lokal sebelum await
+    final customerName = _nameController.text;
+    final tableNumber = _tableController.text;
+    final paymentMethod = _selectedPaymentMethod;
+    final cartItems = List<CartItem>.from(cart.cartItems);
+    final totalAmount = cart.totalAmount;
+
+    final bool success = await GoogleSheetsService.sendOrderToSheet(
+      cartItems,
+      totalAmount,
+      customerName,
+      tableNumber,
+      paymentMethod,
     );
-    
+
     setState(() => _isProcessing = false);
-    
+
+    _showResult(
+      navigator: navigator,
+      scaffoldMessenger: scaffoldMessenger,
+      success: success,
+      cart: cart,
+      customerName: customerName,
+      tableNumber: tableNumber,
+      paymentMethod: paymentMethod,
+      cartItems: cartItems,
+      totalAmount: totalAmount,
+    );
+  }
+
+  void _showResult({
+    required NavigatorState navigator,
+    required ScaffoldMessengerState scaffoldMessenger,
+    required bool success,
+    required CartProvider cart,
+    required String customerName,
+    required String tableNumber,
+    required PaymentMethod paymentMethod,
+    required List<CartItem> cartItems,
+    required double totalAmount,
+  }) {
     if (success) {
-      if (!mounted) return;
-      
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('🎉 Pesanan Berhasil!'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Terima kasih ${_nameController.text}'),
-              const SizedBox(height: 8),
-              Text('Meja No. ${_tableController.text}'),
-              const SizedBox(height: 8),
-              Text('Metode Pembayaran: ${_selectedPaymentMethod.displayName}'),
-              const SizedBox(height: 8),
-              const Text('Pesanan Anda telah tercatat:'),
-              const SizedBox(height: 8),
-                           Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: cart.cartItems.map((item) {
-                    return Text('• ${item.product.name} x${item.quantity} = Rp${item.totalPrice.toStringAsFixed(0)}');
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Total: Rp${cart.totalAmount.toStringAsFixed(0)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Pesanan akan segera diproses',
-                style: TextStyle(fontSize: 12, color: Colors.brown.shade700),
-              ),
-            ],
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => _OrderSuccessDialog(
+            customerName: customerName,
+            tableNumber: tableNumber,
+            paymentMethod: paymentMethod,
+            cartItems: cartItems,
+            totalAmount: totalAmount,
+            onConfirm: () {
+              cart.clearCart();
+              _nameController.clear();
+              _tableController.clear();
+              navigator.pop(); // tutup dialog
+              navigator.pop(); // kembali ke product list
+            },
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                cart.clearCart();
-                _nameController.clear();
-                _tableController.clear();
-                Navigator.pop(dialogContext);
-                if (mounted) Navigator.pop(context);
-              },
-              child: const Text('OK'),
-            ),
-          ],
         ),
       );
     } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
-          content: Text('Gagal mengirim pesanan. Coba lagi.'),
+          content: Text('Gagal mengirim pesanan. Periksa koneksi dan coba lagi.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -1140,5 +1173,126 @@ class _CartScreenState extends State<CartScreen> {
     _nameController.dispose();
     _tableController.dispose();
     super.dispose();
+  }
+}
+
+// ==================== SCREEN: ORDER SUCCESS ====================
+class _OrderSuccessDialog extends StatelessWidget {
+  final String customerName;
+  final String tableNumber;
+  final PaymentMethod paymentMethod;
+  final List<CartItem> cartItems;
+  final double totalAmount;
+  final VoidCallback onConfirm;
+
+  const _OrderSuccessDialog({
+    required this.customerName,
+    required this.tableNumber,
+    required this.paymentMethod,
+    required this.cartItems,
+    required this.totalAmount,
+    required this.onConfirm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check_circle_rounded,
+                  size: 70, color: Colors.green.shade600),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                '🎉 Pesanan Berhasil!',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text('Terima kasih, $customerName!',
+                style: TextStyle(color: Colors.grey.shade600)),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.brown.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.brown.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _infoRow(Icons.table_restaurant, 'Meja', tableNumber),
+                    const SizedBox(height: 8),
+                    _infoRow(Icons.payment, 'Pembayaran', paymentMethod.displayName),
+                    const Divider(height: 20),
+                    ...cartItems.map((item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(child: Text('${item.product.name} x${item.quantity}')),
+                          Text('Rp${item.totalPrice.toStringAsFixed(0)}',
+                            style: const TextStyle(fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    )),
+                    const Divider(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('Rp${totalAmount.toStringAsFixed(0)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold,
+                            fontSize: 16, color: Colors.brown)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onConfirm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.brown,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Kembali ke Menu',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.brown.shade600),
+        const SizedBox(width: 8),
+        Text('$label: ', style: TextStyle(color: Colors.grey.shade600)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+      ],
+    );
   }
 }
