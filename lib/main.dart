@@ -739,101 +739,142 @@ class ProductCard extends StatelessWidget {
   }
 
   void _showProductDetailDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+  showDialog(
+    context: context,
+    builder: (dialogContext) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
-        title: Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.brown.shade600),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                product.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                product.imageUrl,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 180,
-                    color: Colors.brown.shade100,
-                    child: Icon(Icons.cake, size: 60, color: Colors.brown.shade300),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Kategori: ${product.category}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.brown.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              product.description,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Harga',
-                  style: TextStyle(color: Colors.grey.shade600),
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.brown.shade600),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        product.name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Rp${product.price.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.brown.shade700,
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    product.imageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.brown.shade100,
+                        child: Icon(Icons.cake, size: 60, color: Colors.brown.shade300),
+                      );
+                    },
                   ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.brown.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Kategori: ${product.category}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.brown.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  product.description,
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 16),
+                Divider(color: Colors.grey.shade300),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Harga',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      'Rp${product.price.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.brown.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.grey.shade400,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Tutup'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          _showQuantityDialog(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Pesan Sekarang'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Tutup'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              _showQuantityDialog(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.brown,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Pesan Sekarang'),
-          ),
-        ],
       ),
-    );
-  }
+    ),
+  );
+}
   
   void _showQuantityDialog(BuildContext context) {
     int quantity = 1;
