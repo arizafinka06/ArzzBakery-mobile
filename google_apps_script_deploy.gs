@@ -1,202 +1,335 @@
 // ============================================================
 // ARZZ BAKERY - Google Apps Script Backend
 // ============================================================
-// CARA DEPLOY:
-// 1. Buka Google Spreadsheet baru, beri nama "Arzz Bakery Orders"
-// 2. Klik Extensions > Apps Script
-// 3. Hapus kode default, paste seluruh kode ini
-// 4. Klik Save (Ctrl+S)
-// 5. Klik Deploy > New Deployment
-//    - Type        : Web App
-//    - Execute as  : Me
-//    - Who access  : Anyone
-// 6. Klik Deploy > copy URL yang muncul
-// 7. Paste URL ke main.dart pada variabel 'scriptUrl'
+// Cara deploy:
+// 1. Buka Google Spreadsheet, lalu Extensions > Apps Script.
+// 2. Paste kode ini, Save, lalu jalankan setupSheet() satu kali.
+// 3. Deploy > New deployment > Web app.
+//    Execute as: Me, Who has access: Anyone.
+// 4. Copy Web App URL ke GoogleSheetsService.scriptUrl di Flutter.
 //
-// CARA TEST MANUAL (dari editor GAS):
-//   - Jalankan fungsi: setupSheet   (bukan initHeaders langsung)
-//   - Jalankan fungsi: testDoGet    (simulasi order masuk)
+// Admin default dibuat saat setupSheet():
+// username: admin
+// password: admin123
 // ============================================================
 
-const SHEET_NAME = 'Pesanan';
+const USERS_SHEET_NAME = 'Users';
+const ORDERS_SHEET_NAME = 'Pesanan';
 
-// ─── Setup awal: buat/inisialisasi sheet ───────────────────
-// Jalankan fungsi ini SATU KALI dari editor GAS setelah paste kode,
-// sebelum deploy. Fungsi ini aman dijalankan berulang kali.
+const USER_HEADERS = [
+  'User ID',
+  'Nama',
+  'Username',
+  'Password',
+  'Role',
+  'Created At',
+];
+
+const ORDER_HEADERS = [
+  'Order ID',
+  'Timestamp',
+  'User ID',
+  'Username',
+  'Nama Pemesan',
+  'Nomor Meja',
+  'Product ID',
+  'Nama Produk',
+  'Jumlah',
+  'Harga Satuan',
+  'Total Item',
+  'Total Pesanan',
+  'Metode Pembayaran',
+];
+
 function setupSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  const usersSheet = _getOrCreateSheet(ss, USERS_SHEET_NAME, USER_HEADERS);
+  const ordersSheet = _getOrCreateSheet(ss, ORDERS_SHEET_NAME, ORDER_HEADERS);
 
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    Logger.log('Sheet "' + SHEET_NAME + '" dibuat baru.');
-  } else {
-    Logger.log('Sheet "' + SHEET_NAME + '" sudah ada.');
-  }
+  _ensureDefaultAdmin(usersSheet);
+  usersSheet.autoResizeColumns(1, USER_HEADERS.length);
+  ordersSheet.autoResizeColumns(1, ORDER_HEADERS.length);
 
-  if (sheet.getLastRow() === 0) {
-    _initHeaders(sheet);
-    Logger.log('Header berhasil dibuat.');
-  } else {
-    Logger.log('Header sudah ada, dilewati.');
-  }
-
-  Logger.log('Setup selesai! Silakan Deploy sekarang.');
+  Logger.log('Setup selesai. Sheet Users dan Pesanan siap dipakai.');
 }
 
-// ─── Fungsi internal inisialisasi header (jangan jalankan langsung) ──
-function _initHeaders(sheet) {
-  const headers = [
-    'No',
-    'Timestamp',
-    'Nama Pemesan',
-    'Nomor Meja',
-    'Nama Produk',
-    'Jumlah',
-    'Harga Satuan',
-    'Total Item',
-    'Total Pesanan',
-    'Metode Pembayaran',
-  ];
-  sheet.appendRow(headers);
+function doGet(e) {
+  return _handleRequest(e);
+}
 
-  // Format header: warna coklat, teks putih, bold, center
+function doPost(e) {
+  return _handleRequest(e);
+}
+
+function _handleRequest(e) {
+  try {
+    const params = _readParams(e);
+    const action = params.action || 'create_order';
+
+    setupSheet();
+
+    if (action === 'ping') {
+      return _json({ status: 'success', message: 'Arzz Bakery API running' });
+    }
+    if (action === 'register') return _register(params);
+    if (action === 'login') return _login(params);
+    if (action === 'create_order') return _createOrder(params);
+    if (action === 'orders') return _getOrders(params);
+    if (action === 'users') return _getUsers();
+
+    return _json({ status: 'error', message: 'Action tidak dikenali' });
+  } catch (err) {
+    return _json({ status: 'error', message: String(err) });
+  }
+}
+
+function _register(params) {
+  _require(params, ['name', 'username', 'password']);
+
+  const sheet = _sheet(USERS_SHEET_NAME);
+  const username = String(params.username).trim();
+  const existing = _findUserByUsername(username);
+
+  if (existing) {
+    return _json({ status: 'error', message: 'Username sudah terdaftar' });
+  }
+
+  const user = {
+    id: Utilities.getUuid(),
+    name: String(params.name).trim(),
+    username,
+    password: String(params.password),
+    role: 'pelanggan',
+    createdAt: _now(),
+  };
+
+  sheet.appendRow([
+    user.id,
+    user.name,
+    user.username,
+    user.password,
+    user.role,
+    user.createdAt,
+  ]);
+
+  return _json({ status: 'success', message: 'Akun berhasil dibuat', user });
+}
+
+function _login(params) {
+  _require(params, ['username', 'password']);
+
+  const user = _findUserByUsername(String(params.username).trim());
+  if (!user || user.password !== String(params.password)) {
+    return _json({ status: 'error', message: 'Username atau password salah' });
+  }
+
+  return _json({
+    status: 'success',
+    user: {
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      password: user.password,
+      role: user.role,
+    },
+  });
+}
+
+function _createOrder(params) {
+  _require(params, [
+    'user_id',
+    'username',
+    'customer_name',
+    'table_number',
+    'total_amount',
+    'payment_method',
+    'items',
+  ]);
+
+  const sheet = _sheet(ORDERS_SHEET_NAME);
+  const items = JSON.parse(decodeURIComponent(params.items));
+  const orderId = Utilities.getUuid();
+  const timestamp = _now();
+  const total = Number(params.total_amount);
+
+  items.forEach((item, index) => {
+    sheet.appendRow([
+      orderId,
+      index === 0 ? timestamp : '',
+      index === 0 ? params.user_id : '',
+      index === 0 ? params.username : '',
+      index === 0 ? params.customer_name : '',
+      index === 0 ? params.table_number : '',
+      item.product_id || '',
+      item.product_name,
+      Number(item.quantity),
+      Number(item.price),
+      Number(item.total),
+      index === 0 ? total : '',
+      index === 0 ? params.payment_method : '',
+    ]);
+  });
+
+  sheet.autoResizeColumns(1, ORDER_HEADERS.length);
+  return _json({ status: 'success', message: 'Pesanan tersimpan', order_id: orderId });
+}
+
+function _getOrders(params) {
+  const rows = _rowsAsObjects(_sheet(ORDERS_SHEET_NAME));
+  const ordersById = {};
+  let activeHeader = null;
+
+  rows.forEach((row) => {
+    if (row['Order ID']) {
+      activeHeader = row;
+    }
+    if (!activeHeader || !row['Nama Produk']) return;
+
+    const orderId = activeHeader['Order ID'];
+    if (!ordersById[orderId]) {
+      ordersById[orderId] = {
+        id: orderId,
+        timestamp: activeHeader['Timestamp'],
+        userId: activeHeader['User ID'],
+        username: activeHeader['Username'],
+        customerName: activeHeader['Nama Pemesan'],
+        tableNumber: activeHeader['Nomor Meja'],
+        totalAmount: Number(activeHeader['Total Pesanan'] || 0),
+        paymentMethod: activeHeader['Metode Pembayaran'],
+        items: [],
+      };
+    }
+
+    ordersById[orderId].items.push({
+      productId: row['Product ID'],
+      productName: row['Nama Produk'],
+      quantity: Number(row['Jumlah'] || 0),
+      price: Number(row['Harga Satuan'] || 0),
+      total: Number(row['Total Item'] || 0),
+    });
+  });
+
+  let orders = Object.keys(ordersById).map((id) => ordersById[id]);
+  if (params.user_id) {
+    orders = orders.filter((order) => order.userId === params.user_id);
+  }
+
+  orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  return _json({ status: 'success', orders });
+}
+
+function _getUsers() {
+  const users = _rowsAsObjects(_sheet(USERS_SHEET_NAME)).map((row) => ({
+    id: row['User ID'],
+    name: row['Nama'],
+    username: row['Username'],
+    password: row['Password'],
+    role: row['Role'],
+  }));
+  return _json({ status: 'success', users });
+}
+
+function _getOrCreateSheet(ss, name, headers) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  } else {
+    const currentHeaders = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+    const isDifferent = headers.some((header, index) => currentHeaders[index] !== header);
+    if (isDifferent) {
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
+  }
+
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setBackground('#6D4C41');
   headerRange.setFontColor('#FFFFFF');
   headerRange.setFontWeight('bold');
   headerRange.setHorizontalAlignment('center');
   sheet.setFrozenRows(1);
-  sheet.autoResizeColumns(1, headers.length);
-}
-
-// ─── Helper: ambil atau buat sheet ──────────────────────────
-function _getOrCreateSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    _initHeaders(sheet);
-  } else if (sheet.getLastRow() === 0) {
-    _initHeaders(sheet);
-  }
 
   return sheet;
 }
 
-// ─── Helper: simpan baris data ke sheet ─────────────────────
-function _saveRows(sheet, params) {
-  const items     = JSON.parse(decodeURIComponent(params.items));
-  const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-  const total     = parseFloat(params.total_amount);
-  const name      = params.customer_name;
-  const table     = params.table_number;
-  const payment   = params.payment_method || 'Tunai';
-
-  let rowNo = sheet.getLastRow(); // baris 1 = header
-
-  items.forEach((item, i) => {
-    rowNo++;
-    sheet.appendRow([
-      rowNo,
-      i === 0 ? timestamp : '',
-      i === 0 ? name      : '',
-      i === 0 ? table     : '',
-      item.product_name,
-      item.quantity,
-      item.price,
-      item.total,
-      i === 0 ? total   : '',
-      i === 0 ? payment : '',
-    ]);
-  });
-
-  sheet.autoResizeColumns(1, 10);
-  return items.length;
+function _ensureDefaultAdmin(sheet) {
+  if (_findUserByUsername('admin')) return;
+  sheet.appendRow([
+    Utilities.getUuid(),
+    'Administrator',
+    'admin',
+    'admin123',
+    'admin',
+    _now(),
+  ]);
 }
 
-// ─── GET handler (dipanggil Flutter via http.get) ───────────
-function doGet(e) {
-  try {
-    const params = e.parameter;
-
-    // Ping / health-check
-    if (params.action === 'ping') {
-      return _json({ status: 'ok', message: 'Arzz Bakery API running' });
-    }
-
-    // Validasi field wajib
-    const required = ['customer_name', 'table_number', 'total_amount', 'items'];
-    for (const f of required) {
-      if (!params[f]) {
-        return _json({ status: 'error', message: 'Parameter "' + f + '" tidak ada' });
+function _findUserByUsername(username) {
+  const users = _rowsAsObjects(_sheet(USERS_SHEET_NAME));
+  const normalized = String(username).toLowerCase();
+  return users.find((user) => String(user['Username']).toLowerCase() === normalized)
+    ? {
+        id: users.find((user) => String(user['Username']).toLowerCase() === normalized)['User ID'],
+        name: users.find((user) => String(user['Username']).toLowerCase() === normalized)['Nama'],
+        username: users.find((user) => String(user['Username']).toLowerCase() === normalized)['Username'],
+        password: users.find((user) => String(user['Username']).toLowerCase() === normalized)['Password'],
+        role: users.find((user) => String(user['Username']).toLowerCase() === normalized)['Role'],
       }
-    }
-
-    const sheet = _getOrCreateSheet();
-    const count = _saveRows(sheet, params);
-
-    return _json({ status: 'success', message: 'Pesanan tersimpan', order_count: count });
-
-  } catch (err) {
-    return _json({ status: 'error', message: err.toString() });
-  }
+    : null;
 }
 
-// ─── POST handler (fallback) ─────────────────────────────────
-function doPost(e) {
-  try {
-    let params;
-    if (e.postData && e.postData.contents) {
-      const data = JSON.parse(e.postData.contents);
-      // normalisasi: konversi items array ke JSON string jika perlu
-      params = {
-        customer_name : data.customer_name,
-        table_number  : data.table_number,
-        total_amount  : String(data.total_amount),
-        payment_method: data.payment_method,
-        items         : encodeURIComponent(JSON.stringify(data.items || [])),
-      };
-    } else {
-      params = e.parameter;
-    }
+function _rowsAsObjects(sheet) {
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return [];
 
-    const sheet = _getOrCreateSheet();
-    const count = _saveRows(sheet, params);
-
-    return _json({ status: 'success', message: 'Data tersimpan', order_count: count });
-
-  } catch (err) {
-    return _json({ status: 'error', message: err.toString() });
-  }
+  const headers = values[0];
+  return values.slice(1).map((row) => {
+    const obj = {};
+    headers.forEach((header, index) => {
+      obj[header] = row[index];
+    });
+    return obj;
+  });
 }
 
-// ─── Utility: buat JSON response ────────────────────────────
+function _sheet(name) {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheetByName(name);
+}
+
+function _readParams(e) {
+  if (e && e.postData && e.postData.contents) {
+    const body = String(e.postData.contents).trim();
+    if (body.charAt(0) === '{' || body.charAt(0) === '[') {
+      return JSON.parse(body);
+    }
+  }
+  return (e && e.parameter) || {};
+}
+
+function _require(params, fields) {
+  fields.forEach((field) => {
+    if (params[field] === undefined || params[field] === null || params[field] === '') {
+      throw new Error('Parameter "' + field + '" wajib diisi');
+    }
+  });
+}
+
+function _now() {
+  return new Date().toISOString();
+}
+
 function _json(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// ─── Test manual dari editor GAS ────────────────────────────
-// Pilih fungsi ini di dropdown lalu klik Run untuk simulasi order masuk
 function testDoGet() {
-  const fakeItems = JSON.stringify([
-    { product_name: 'Croissant', quantity: 2, price: 25000, total: 50000 },
-    { product_name: 'Mango Cheesecake', quantity: 1, price: 35000, total: 35000 },
-  ]);
-
-  const fakeEvent = {
+  const result = doGet({
     parameter: {
-      customer_name : 'Tes User',
-      table_number  : '5',
-      total_amount  : '85000',
-      payment_method: 'QRIS',
-      items         : encodeURIComponent(fakeItems),
-    }
-  };
-
-  const result = doGet(fakeEvent);
+      action: 'ping',
+    },
+  });
   Logger.log(result.getContent());
 }
