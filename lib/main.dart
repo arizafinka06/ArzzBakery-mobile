@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -18,9 +19,9 @@ part 'features/pelanggan/main_menu_screen.dart';
 part 'features/pelanggan/product_list_screen.dart';
 part 'features/pelanggan/cart_screen.dart';
 part 'features/pelanggan/order_history_screen.dart';
+part 'features/pelanggan/order_receipt_screen.dart';
 part 'features/admin/report_screen.dart';
 part 'features/admin/user_management_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();

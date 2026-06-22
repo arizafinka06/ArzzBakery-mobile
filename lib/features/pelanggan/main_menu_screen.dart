@@ -32,7 +32,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   @override
   Widget build(BuildContext context) {
     final List<BottomNavigationBarItem> items;
-    
+
     if (currentUser?.role == 'admin') {
       items = [
         const BottomNavigationBarItem(
@@ -72,7 +72,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -94,12 +94,11 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                 currentUser = null;
                 await StorageService.saveUser(null);
                 cartProvider.clearCart();
-                if (mounted) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
               },
             ),
           ],
@@ -123,4 +122,3 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     );
   }
 }
-

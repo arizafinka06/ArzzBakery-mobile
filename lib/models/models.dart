@@ -104,30 +104,60 @@ class Order {
   };
 
   factory Order.fromJson(Map<String, dynamic> json) {
-    final itemsData = (json['items'] as List<dynamic>?) ?? [];
-    final items = itemsData.map((itemJson) {
-      final productId = itemJson['productId']?.toString() ?? '';
+    // Items bisa berupa List<dynamic> (dari response JSON)
+    // atau String JSON (jika dibaca langsung dari spreadsheet tanpa parsing)
+    List<dynamic> rawItems = [];
+    final itemsField = json['items'];
+    if (itemsField is List) {
+      rawItems = itemsField;
+    } else if (itemsField is String && itemsField.isNotEmpty) {
+      try {
+        rawItems = jsonDecode(itemsField) as List<dynamic>;
+      } catch (_) {
+        rawItems = [];
+      }
+    }
+
+    final items = rawItems.map((itemJson) {
+      final map = itemJson as Map<String, dynamic>;
+      // Support kedua format key: productId/productName (lama) dan
+      // product_id/product_name (baru dari Apps Script v2)
+      final productId = map['productId']?.toString() ??
+          map['product_id']?.toString() ??
+          '';
       final product = Product(
         id: productId,
-        name: itemJson['productName'] as String? ?? 'Produk Tidak Ditemukan',
-        price: (itemJson['price'] as num?)?.toDouble() ?? 0,
-        imageUrl: itemJson['imageUrl'] as String? ?? '',
-        description: itemJson['description'] as String? ?? '',
-        category: itemJson['category'] as String? ?? '',
+        name: map['productName']?.toString() ??
+            map['product_name']?.toString() ??
+            'Produk',
+        price: (map['price'] as num?)?.toDouble() ?? 0.0,
+        imageUrl: map['imageUrl']?.toString() ?? '',
+        description: map['description']?.toString() ?? '',
+        category: map['category']?.toString() ?? '',
       );
       return CartItem(
         product: product,
-        quantity: itemJson['quantity'] as int? ?? 1,
+        quantity: (map['quantity'] as num?)?.toInt() ?? 1,
       );
     }).toList();
 
+    // Parse timestamp dengan fallback aman
+    DateTime parsedTimestamp;
+    try {
+      final rawTs = json['timestamp']?.toString() ?? '';
+      parsedTimestamp =
+          rawTs.isNotEmpty ? DateTime.parse(rawTs).toLocal() : DateTime.now();
+    } catch (_) {
+      parsedTimestamp = DateTime.now();
+    }
+
     return Order(
-      id: json['id'] as String,
-      customerName: json['customerName'] as String,
-      tableNumber: json['tableNumber'] as String,
-      paymentMethod: json['paymentMethod'] as String,
-      totalAmount: (json['totalAmount'] as num).toDouble(),
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      id: json['id']?.toString() ?? '',
+      customerName: json['customerName']?.toString() ?? '',
+      tableNumber: json['tableNumber']?.toString() ?? '',
+      paymentMethod: json['paymentMethod']?.toString() ?? '',
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      timestamp: parsedTimestamp,
       items: items,
       userId: json['userId']?.toString() ?? '',
       username: json['username']?.toString() ?? '',
@@ -166,7 +196,7 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'QRIS';
     }
   }
-  
+
   IconData get icon {
     switch (this) {
       case PaymentMethod.cash:
@@ -177,3 +207,49 @@ extension PaymentMethodExtension on PaymentMethod {
   }
 }
 
+// ==================== MODEL LAPORAN PELANGGAN ====================
+class CustomerReport {
+  final String id;
+  final String userId;
+  final String username;
+  final String customerName;
+  final String category;
+  final String title;
+  final String description;
+  final DateTime timestamp;
+  final String status; // 'Baru', 'Diproses', 'Selesai'
+
+  CustomerReport({
+    required this.id,
+    required this.userId,
+    required this.username,
+    required this.customerName,
+    required this.category,
+    required this.title,
+    required this.description,
+    required this.timestamp,
+    required this.status,
+  });
+
+  factory CustomerReport.fromJson(Map<String, dynamic> json) {
+    DateTime parsedTimestamp;
+    try {
+      final rawTs = json['timestamp']?.toString() ?? '';
+      parsedTimestamp = rawTs.isNotEmpty ? DateTime.parse(rawTs) : DateTime.now();
+    } catch (_) {
+      parsedTimestamp = DateTime.now();
+    }
+
+    return CustomerReport(
+      id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      username: json['username']?.toString() ?? '',
+      customerName: json['customerName']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      timestamp: parsedTimestamp,
+      status: json['status']?.toString() ?? 'Baru',
+    );
+  }
+}

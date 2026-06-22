@@ -31,7 +31,7 @@ class _CartScreenState extends State<CartScreen> {
 
     setState(() => _isLoading = true);
 
-    final bool success = await GoogleSheetsService.sendOrderToSheet(
+    final order = await GoogleSheetsService.sendOrderToSheet(
       cartProvider.cartItems,
       cartProvider.totalAmount,
       _customerNameController.text.trim().isEmpty
@@ -43,28 +43,26 @@ class _CartScreenState extends State<CartScreen> {
 
     setState(() => _isLoading = false);
 
-    if (success) {
+    if (order != null) {
       cartProvider.clearCart();
       _customerNameController.clear();
       _tableNumberController.clear();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pesanan berhasil dibuat!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OrderReceiptScreen(order: order),
+        ),
+      );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gagal membuat pesanan. Silakan coba lagi.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal membuat pesanan. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
